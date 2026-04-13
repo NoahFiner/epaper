@@ -40,7 +40,7 @@ def _parse_times(visits):
             expected = datetime.fromisoformat(expected_str.replace("Z", "+00:00"))
             if expected.tzinfo is None:
                 expected = expected.replace(tzinfo=timezone.utc)
-            times.append(expected.astimezone(LOCAL_TZ).strftime("%-I:%M"))
+            times.append(expected.astimezone(LOCAL_TZ).strftime("%-I:%M:%S"))
         except (KeyError, TypeError, ValueError) as e:
             logging.debug(f"Skipping visit: {e}")
     return times[:2]

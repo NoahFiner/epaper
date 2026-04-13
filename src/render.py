@@ -1,5 +1,5 @@
 import os
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
 from config import FONT_PATH, FONT_PATH_GRANDSTANDER, IMG_DIR
 
@@ -25,8 +25,9 @@ def _draw_mixed(draw, x, y, segments, fill=BLACK):
         x = draw.textbbox((x, y + y_offset), text, font=font)[2]
 
 
-def render(arrivals, temp):
+def render(arrivals, temp, bikes=None):
     img = Image.open(os.path.join(IMG_DIR, "bg.bmp")).convert("RGB")
+    img = ImageEnhance.Contrast(img).enhance(1.2)
     draw = ImageDraw.Draw(img)
     gs, gd = _load_fonts(FONT_SIZE)
 
@@ -35,11 +36,17 @@ def render(arrivals, temp):
     east_str = " & ".join(east) if east else "—"
     west_str = " & ".join(west) if west else "—"
 
+    bikes = bikes or {}
+    waller = bikes.get("Waller", {})
+    cole = bikes.get("Cole", {})
+    waller_str = f"{waller.get('ebikes', 0)}e, {waller.get('regular', 0)}a"
+    cole_str   = f"{cole.get('ebikes', 0)}e, {cole.get('regular', 0)}a"
+
     lines = [
         [("Good morning!! Today is ", gs), (f"{temp}°F", gd)],
         [("N-Caltrain at ", gs), (east_str, gd)],
         [("N-Beach is at ", gs), (west_str, gd)],
-        [("Waller has ", gs), ("3e, 4a", gd), ("  Cole has ", gs), ("3e, 4a", gd)],
+        [("Waller is ", gs), (waller_str, gd), ("  Cole is ", gs), (cole_str, gd)],
     ]
 
     for i, segments in enumerate(lines):
@@ -53,10 +60,13 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.dirname(__file__))
     from trains import fetch_trains
     from weather import fetch_temp
+    from bikes import fetch_bikes
     arrivals = fetch_trains()
     temp = fetch_temp()
+    bikes = fetch_bikes()
     print(f"Arrivals: {arrivals}, Temp: {temp}°F")
-    image = render(arrivals, temp)
+    print(f"Bikes: Waller {bikes['Waller']['ebikes']}e, {bikes['Waller']['regular']}a  Cole {bikes['Cole']['ebikes']}e, {bikes['Cole']['regular']}a")
+    image = render(arrivals, temp, bikes)
     out = os.path.join(os.path.dirname(__file__), "..", "output.png")
     image.save(out)
     print(f"Saved preview to {os.path.abspath(out)}")
