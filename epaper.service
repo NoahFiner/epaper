@@ -1,0 +1,15 @@
+[Unit]
+Description=E-Paper Train Display
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=noahfiner
+WorkingDirectory=/home/noahfiner/epaper
+ExecStart=/usr/bin/python3 /home/noahfiner/epaper/src/index.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
