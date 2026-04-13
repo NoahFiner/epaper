@@ -31,8 +31,8 @@ def _fetch_stop(stop_code):
     )
 
 
-def _parse_minutes(visits, now):
-    minutes = []
+def _parse_times(visits):
+    times = []
     for visit in visits:
         try:
             journey = visit["MonitoredVehicleJourney"]
@@ -40,20 +40,19 @@ def _parse_minutes(visits, now):
             expected = datetime.fromisoformat(expected_str.replace("Z", "+00:00"))
             if expected.tzinfo is None:
                 expected = expected.replace(tzinfo=timezone.utc)
-            minutes.append(round((expected - now).total_seconds() / 60))
+            times.append(expected.astimezone(LOCAL_TZ).strftime("%-I:%M"))
         except (KeyError, TypeError, ValueError) as e:
             logging.debug(f"Skipping visit: {e}")
-    return sorted(minutes)[:2]
+    return times[:2]
 
 
 def fetch_trains():
-    now = datetime.now(timezone.utc)
     result = {"West": [], "East": []}
 
     for stop_code, label in [(STOP_CODE_OB, "West"), (STOP_CODE_IB, "East")]:
         try:
             visits = _fetch_stop(stop_code)
-            result[label] = _parse_minutes(visits, now)
+            result[label] = _parse_times(visits)
         except Exception as e:
             logging.error(f"fetch_trains({stop_code}): {e}")
 
