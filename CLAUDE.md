@@ -26,8 +26,25 @@ font/
 # On laptop — generate output.png preview with live API data
 python3 src/render.py
 
-# On Raspberry Pi — start the display loop
+# On Raspberry Pi — start the display loop manually
 python3 src/index.py
+```
+
+## Systemd service (Pi auto-start)
+
+The Pi runs `src/index.py` as a systemd service (`epaper`) that starts automatically on boot.
+
+```bash
+# Start / stop
+sudo systemctl start epaper
+sudo systemctl stop epaper
+
+# Enable / disable auto-start on boot
+sudo systemctl enable epaper
+sudo systemctl disable epaper
+
+# Logs
+journalctl -u epaper -f
 ```
 
 ## Key facts for agents
